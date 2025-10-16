@@ -1,0 +1,263 @@
+/* 
+ * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+ * See LICENSE in the project root for license information.
+ */
+
+ html,
+ body {
+     width: 100%;
+     height: 100%;
+     margin: 0;
+     padding: 0;
+     background-color: #ffffff;
+ }
+ 
+ ul {
+     margin: 0;
+     padding: 0;
+ }
+ 
+ .ms-welcome__header {
+    padding: 20px;
+    padding-bottom: 30px;
+    padding-top: 100px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    align-items: center;
+ }
+
+ .ms-welcome__main {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-flex: 1 0 0;
+    flex: 1 0 0;
+    padding: 10px 20px;
+ }
+ 
+ .ms-welcome__main > h2 {
+     width: 100%;
+     text-align: center;
+ }
+ 
+ .ms-welcome__features {
+     list-style-type: none;
+     margin-top: 20px;
+ }
+ 
+ .ms-welcome__features.ms-List .ms-ListItem {
+     padding-bottom: 20px;
+     display: -webkit-flex;
+     display: flex;
+ }
+ 
+ .ms-welcome__features.ms-List .ms-ListItem > .ms-Icon {
+     margin-right: 10px;
+ }
+ 
+ .ms-welcome__action.ms-Button--hero {
+     margin-top: 30px;
+ }
+ 
+.ms-Button.ms-Button--hero .ms-Button-label {
+  color: #0078d7;
+}
+
+.ms-Button.ms-Button--hero:hover .ms-Button-label,
+.ms-Button.ms-Button--hero:focus .ms-Button-label{
+  color: #005a9e;
+  cursor: pointer;
+}
+
+b {
+    font-weight: bold;
+}
+
+.ms-welcome__results {
+    width: 100%;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.ms-welcome__results #placeholder-count {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.ms-welcome__results #placeholder-results {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.ms-welcome__results #placeholder-results .ms-ListItem {
+    padding: 10px 0;
+    border-bottom: 1px solid #666666;
+    color: #ffffff;
+}
+
+.ms-welcome__results #placeholder-results .ms-ListItem:last-child {
+    border-bottom: none;
+}
+
+.placeholder-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.placeholder-label {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.placeholder-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.placeholder-input input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #666666;
+    border-radius: 2px;
+    background-color: #2d2d2d;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.placeholder-input input::placeholder {
+    color: #999999;
+}
+
+.placeholder-input input:focus {
+    outline: none;
+    border-color: #0078d7;
+    background-color: #3a3a3a;
+}
+
+.insert-btn {
+    background-color: #0078d7;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    min-width: 60px;
+}
+
+.insert-btn:hover {
+    background-color: #106ebe;
+}
+
+.insert-btn .ms-Button-label {
+    color: #ffffff;
+    font-size: 12px;
+}
+
+/* Tab Navigation Styles */
+.tab-navigation {
+    display: flex;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #666666;
+    padding: 0;
+    margin: 0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px 20px;
+    background-color: #1e1e1e;
+    color: #999999;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+.tab-button.active {
+    color: #ffffff;
+    border-bottom: 2px solid #0078d7;
+    background-color: #2d2d2d;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+    background-color: #ffffff;
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+#ai-chat-tab {
+    padding: 0;
+}
+
+#app-body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+#chat-root {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* AI Autofill Button Styles */
+.ai-autofill-button {
+    margin-top: 60px;
+    padding: 28px 80px;
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    min-width: 280px;
+}
+
+.ai-autofill-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.7);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.ai-autofill-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.ai-autofill-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}

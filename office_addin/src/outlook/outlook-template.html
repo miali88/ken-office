@@ -1,0 +1,97 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
+<!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kenneth AI</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+
+    <!-- Template styles -->
+    <link href="taskpane.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body class="ms-font-m ms-Fabric">
+    <header class="app-header">
+        <h1 class="ms-font-l">Kenneth AI</h1>
+    </header>
+
+    <section id="sideload-msg" class="sideload-msg">
+        <p class="ms-font-m">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in.</p>
+    </section>
+
+    <main id="app-body" style="display: none;">
+        <!-- Tab Navigation -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="chat">Chat</button>
+            <button class="tab-btn" data-tab="filing">Filing</button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="filing-tab">
+            <!-- Filing Card -->
+            <div class="card">
+                <div class="field-list">
+                    <div class="field-row">
+                        <label>Client</label>
+                        <input type="text" id="field-client" readonly />
+                    </div>
+                    <div class="field-row">
+                        <label>Matter</label>
+                        <input type="text" id="field-matter" readonly />
+                    </div>
+                    <div class="field-row">
+                        <label>Category</label>
+                        <input type="text" id="field-category" readonly />
+                    </div>
+                    <div class="field-row">
+                        <label>Case</label>
+                        <input type="text" id="field-case" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments Sub-card -->
+            <div class="card sub-card">
+                <h3 class="ms-font-m">Attachments</h3>
+                <table class="attachments-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Filed Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attachments-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content active" id="chat-tab">
+            <div class="card">
+                <h3 class="ms-font-m">Email Summary</h3>
+                <div id="summary-loading" style="display: none;">
+                    <p class="ms-font-m">Generating summary...</p>
+                </div>
+                <div id="summary-error" style="display: none; color: red;">
+                    <p class="ms-font-m" id="error-message"></p>
+                </div>
+                <div id="summary-content" style="display: none;">
+                    <p class="ms-font-m" id="summary-text"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
