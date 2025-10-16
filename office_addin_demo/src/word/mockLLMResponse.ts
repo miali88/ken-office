@@ -10,8 +10,19 @@ import type { DocumentOperation } from './types';
 
 export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
   {
+    type: "replaceText",
+    target: "(years ending DD MM YYYY",
+    value: "(years ending 31 March 2022, 31 March 2023, and 31 March 2024",
+    replaceAll: true,
+    metadata: {
+      confidence: "medium",
+      source: "searchCaseDocuments",
+      reasoning: "Financial year end dates extracted from company accounts filings"
+    }
+  },
+  {
     type: "replacePlaceholder",
-    target: "{{company_name}}",
+    target: "company_name",
     value: "ABERDEEN HOUSE CARE LIMITED",
     replaceAll: true,
     metadata: {
@@ -38,12 +49,47 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     }
   },
   {
-    type: "replacePlaceholder",
-    target: "{{ CONDITION_1: whether prior relationship has existed. EITHER: Prior to this date, neither the firm nor the proposed Liquidators have had any other involvement with the Company or its Director. OR: Prior to this date, the proposed liquidators have had involvement with the director….}}",
-    value: "Prior to this date, neither the firm nor the proposed Liquidators have had any other involvement with the Company or its Director.",
+    type: "replaceText",
+    target: "{{ CONDITION_1:",
+    value: "",
+    matchCase: false,
     metadata: {
       confidence: "medium",
-      source: "default assumption"
+      source: "default assumption",
+      reasoning: "Remove conditional marker"
+    }
+  },
+  {
+    type: "replaceText",
+    target: "EITHER: Prior to this date, neither the firm nor the proposed Liquidators have had any other involvement with the Company or its Director. OR: Prior to this date, the proposed liquidators have had involvement with the director",
+    value: "Prior to this date, neither the firm nor the proposed Liquidators have had any other involvement with the Company or its Director.",
+    matchCase: false,
+    metadata: {
+      confidence: "medium",
+      source: "default assumption",
+      reasoning: "Replace conditional options with chosen option"
+    }
+  },
+  {
+    type: "replaceText",
+    target: "whether prior relationship has existed.",
+    value: "",
+    matchCase: false,
+    metadata: {
+      confidence: "medium",
+      source: "default assumption",
+      reasoning: "Remove conditional description"
+    }
+  },
+  {
+    type: "replaceText",
+    target: "}}",
+    value: "",
+    matchCase: false,
+    metadata: {
+      confidence: "high",
+      source: "template cleanup",
+      reasoning: "Remove closing conditional brackets"
     }
   },
   {
