@@ -294,7 +294,17 @@ async function executeFillTableCell(
 
   const cell = cells.items[operation.cell];
   cell.body.clear();
-  cell.body.insertText(operation.value, Word.InsertLocation.start);
+  const insertedRange = cell.body.insertText(operation.value, Word.InsertLocation.start);
+
+  // Add comment with metadata
+  try {
+    const commentText = buildCommentText('fillTableCell', operation.value, operation.metadata);
+    // Insert comment on the text range, not the cell body
+    insertedRange.insertComment(commentText);
+    console.log('Comment added successfully to table cell:', operation.row, operation.cell);
+  } catch (e) {
+    console.warn('Could not add comment to table cell:', e);
+  }
 }
 
 /**
@@ -327,6 +337,7 @@ async function executeReplacePlaceholder(
   }
 
   let replacedCount = 0;
+  const commentText = buildCommentText('replacePlaceholder', operation.value, operation.metadata, operation.target);
 
   if (isLongPlaceholder) {
     for (const result of searchResults.items) {
@@ -344,13 +355,28 @@ async function executeReplacePlaceholder(
                          paragraphText.substring(placeholderIndex + operation.target.length);
 
           paragraph.clear();
-          paragraph.insertText(newText, Word.InsertLocation.start);
-          replacedCount++;
+          const insertedRange = paragraph.insertText(newText, Word.InsertLocation.start);
 
+          // Add comment
+          try {
+            insertedRange.insertComment(commentText);
+          } catch (e) {
+            console.warn('Could not add comment:', e);
+          }
+
+          replacedCount++;
           if (operation.replaceAll === false) break;
         }
       } catch (expandError) {
-        result.insertText(operation.value, Word.InsertLocation.replace);
+        const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
+
+        // Add comment
+        try {
+          insertedRange.insertComment(commentText);
+        } catch (e) {
+          console.warn('Could not add comment:', e);
+        }
+
         replacedCount++;
         if (operation.replaceAll === false) break;
       }
@@ -358,11 +384,27 @@ async function executeReplacePlaceholder(
   } else {
     if (operation.replaceAll !== false) {
       for (const result of searchResults.items) {
-        result.insertText(operation.value, Word.InsertLocation.replace);
+        const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
+
+        // Add comment
+        try {
+          insertedRange.insertComment(commentText);
+        } catch (e) {
+          console.warn('Could not add comment:', e);
+        }
+
         replacedCount++;
       }
     } else {
-      searchResults.items[0].insertText(operation.value, Word.InsertLocation.replace);
+      const insertedRange = searchResults.items[0].insertText(operation.value, Word.InsertLocation.replace);
+
+      // Add comment
+      try {
+        insertedRange.insertComment(commentText);
+      } catch (e) {
+        console.warn('Could not add comment:', e);
+      }
+
       replacedCount = 1;
     }
   }
@@ -389,8 +431,17 @@ async function executeReplaceText(
     return;
   }
 
+  const commentText = buildCommentText('replaceText', operation.value, operation.metadata, operation.target);
+
   for (const result of searchResults.items) {
-    result.insertText(operation.value, Word.InsertLocation.replace);
+    const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
+
+    // Add comment
+    try {
+      insertedRange.insertComment(commentText);
+    } catch (e) {
+      console.warn('Could not add comment:', e);
+    }
   }
 }
 
@@ -416,4 +467,63 @@ async function executeDeleteText(
   for (const result of searchResults.items) {
     result.delete();
   }
+}
+
+/**
+ * Build comment text with metadata
+ */
+function buildCommentText(
+  operationType: string,
+  insertedValue: string,
+  metadata?: { confidence?: string; source?: string; reasoning?: string },
+  originalTarget?: string
+): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`🤖 Kenneth AI - ${operationType}`);
+  lines.push('');
+
+  // Show what was replaced if available
+  if (originalTarget) {
+    const displayTarget = originalTarget.length > 100
+      ? originalTarget.substring(0, 100) + '...'
+      : originalTarget;
+    lines.push(`Replaced: "${displayTarget}"`);
+    lines.push('');
+  }
+
+  // Show inserted value
+  const displayValue = insertedValue.length > 150
+    ? insertedValue.substring(0, 150) + '...'
+    : insertedValue;
+  lines.push(`New value: "${displayValue}"`);
+  lines.push('');
+
+  // Metadata section
+  if (metadata) {
+    lines.push('--- Metadata ---');
+
+    if (metadata.confidence) {
+      const confidenceEmoji = metadata.confidence === 'high' ? '✅' : metadata.confidence === 'medium' ? '⚠️' : '❓';
+      lines.push(`${confidenceEmoji} Confidence: ${metadata.confidence}`);
+    }
+
+    if (metadata.source) {
+      lines.push(`📁 Source: ${metadata.source}`);
+    }
+
+    if (metadata.reasoning) {
+      lines.push(`💭 Reasoning: ${metadata.reasoning}`);
+    }
+
+    lines.push('');
+  }
+
+  // Footer
+  lines.push('---');
+  lines.push('Author: Kenneth AI (Demo Mode)');
+  lines.push('💡 Using mock data from mockLLMResponse.ts');
+
+  return lines.join('\n');
 }

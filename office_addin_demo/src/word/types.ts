@@ -7,7 +7,8 @@ export type DocumentOperation =
   | ReplacePlaceholderOperation
   | ReplaceTextOperation
   | DeleteTextOperation
-  | InsertTextOperation;
+  | InsertTextOperation
+  | FillChecklistCellOperation;
 
 export interface FillTableCellOperation {
   type: 'fillTableCell';
@@ -52,6 +53,21 @@ export interface OperationMetadata {
   confidence: 'high' | 'medium' | 'low';
   source?: string;
   reasoning?: string;
+}
+
+export interface ChecklistMetadata {
+  status: string;
+  commentary: string;
+  references: string[];
+}
+
+export interface FillChecklistCellOperation {
+  type: 'fillChecklistCell';
+  tableIndex: number;
+  row: number;
+  cell: number;
+  value: string;
+  checklistMetadata: ChecklistMetadata;
 }
 
 export interface DocumentStructure {

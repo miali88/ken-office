@@ -1,214 +1,267 @@
 /**
- * Checklist Tab - Document completion checklist
+ * Checklist Tab - Auto-review CVL Checklists
  */
 
 /* global Word */
 
-interface ChecklistItem {
-  id: string;
-  label: string;
-  description?: string;
-  checked: boolean;
-}
-
-const DEFAULT_CHECKLIST_ITEMS: ChecklistItem[] = [
-  {
-    id: 'placeholders-filled',
-    label: 'All placeholders filled',
-    description: 'Verify all {{placeholder}} text has been replaced',
-    checked: false
-  },
-  {
-    id: 'tables-completed',
-    label: 'Tables completed',
-    description: 'Check all table cells contain correct data',
-    checked: false
-  },
-  {
-    id: 'dates-verified',
-    label: 'Dates verified',
-    description: 'Confirm all dates are accurate and formatted correctly',
-    checked: false
-  },
-  {
-    id: 'names-correct',
-    label: 'Names and entities correct',
-    description: 'Verify all company names, director names, and addresses',
-    checked: false
-  },
-  {
-    id: 'financial-data',
-    label: 'Financial data accurate',
-    description: 'Review share capital, shareholding percentages, and other figures',
-    checked: false
-  },
-  {
-    id: 'formatting-consistent',
-    label: 'Formatting consistent',
-    description: 'Check fonts, spacing, and styling throughout',
-    checked: false
-  },
-  {
-    id: 'track-changes-reviewed',
-    label: 'Track changes reviewed',
-    description: 'Accept or reject all tracked changes',
-    checked: false
-  },
-  {
-    id: 'final-proofread',
-    label: 'Final proofread complete',
-    description: 'Read through entire document for errors',
-    checked: false
-  }
-];
-
-let checklistItems: ChecklistItem[] = [...DEFAULT_CHECKLIST_ITEMS];
+import { MOCK_CHECKLIST_OPERATIONS } from './mockChecklistData';
+import type { FillChecklistCellOperation } from './types';
 
 /**
  * Initialize the Checklist tab
  */
 export function initializeChecklistTab() {
-  renderChecklist();
+  const autoReviewBtn = document.getElementById('auto-review-checklist-btn');
 
-  // Add event listeners
-  const resetBtn = document.getElementById('reset-checklist-btn');
-  const autoCheckBtn = document.getElementById('auto-check-btn');
-
-  if (resetBtn) resetBtn.onclick = handleResetChecklist;
-  if (autoCheckBtn) autoCheckBtn.onclick = handleAutoCheck;
+  if (autoReviewBtn) autoReviewBtn.onclick = handleAutoReviewChecklist;
 }
 
 /**
- * Render the checklist
+ * Auto-review checklist and populate the "Initials & Date" column
  */
-function renderChecklist() {
-  const container = document.getElementById('checklist-items');
-  if (!container) return;
-
-  const completedCount = checklistItems.filter(item => item.checked).length;
-  const totalCount = checklistItems.length;
-  const percentage = Math.round((completedCount / totalCount) * 100);
-
-  // Update progress bar
+async function handleAutoReviewChecklist() {
+  const statusElement = document.getElementById('checklist-status');
+  const button = document.getElementById('auto-review-checklist-btn') as HTMLButtonElement;
+  const progressContainer = document.getElementById('checklist-progress-container');
   const progressBar = document.getElementById('checklist-progress-bar');
   const progressText = document.getElementById('checklist-progress-text');
 
-  if (progressBar) {
-    (progressBar as HTMLElement).style.width = `${percentage}%`;
-    (progressBar as HTMLElement).style.background = percentage === 100
-      ? '#10b981'
-      : 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)';
+  if (!statusElement || !button) {
+    alert('Required UI elements not found');
+    return;
   }
 
-  if (progressText) {
-    progressText.textContent = `${completedCount} of ${totalCount} completed (${percentage}%)`;
-  }
+  // Create live debug log
+  let debugLog: string[] = [];
+  const addLog = (message: string, isError = false) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logLine = `${timestamp} ${message}`;
+    debugLog.push(logLine);
+    console.log(logLine);
 
-  // Render checklist items
-  container.innerHTML = checklistItems.map(item => `
-    <div class="checklist-item" style="padding: 12px; margin-bottom: 8px; background: ${item.checked ? '#f0fdf4' : '#f9f9f9'}; border-radius: 6px; border: 1px solid ${item.checked ? '#86efac' : '#e0e0e0'}; cursor: pointer;" data-id="${item.id}">
-      <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="flex-shrink: 0; width: 20px; height: 20px; border-radius: 4px; border: 2px solid ${item.checked ? '#10b981' : '#999'}; background: ${item.checked ? '#10b981' : 'white'}; display: flex; align-items: center; justify-content: center; margin-top: 2px;">
-          ${item.checked ? '<span style="color: white; font-size: 14px;">✓</span>' : ''}
-        </div>
-        <div style="flex: 1;">
-          <div style="font-weight: ${item.checked ? '600' : '500'}; color: ${item.checked ? '#059669' : '#333'}; margin-bottom: 4px; text-decoration: ${item.checked ? 'line-through' : 'none'};">
-            ${item.label}
-          </div>
-          ${item.description ? `<div style="font-size: 12px; color: #666; line-height: 1.4;">${item.description}</div>` : ''}
+    // Update UI immediately
+    const color = isError ? '#d32f2f' : '#666';
+    statusElement.innerHTML = `
+      <div style="padding: 12px; background: ${isError ? '#ffebee' : '#f5f5f5'}; border-radius: 4px; border: 1px solid ${isError ? '#ef5350' : '#ddd'};">
+        <div style="margin-bottom: 8px; font-weight: bold; color: ${color};">${message}</div>
+        <div style="max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; background: white; padding: 8px; border-radius: 4px;">
+          ${debugLog.map(line => `<div style="margin: 2px 0;">${line}</div>`).join('')}
         </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  };
 
-  // Add click handlers to each item
-  container.querySelectorAll('.checklist-item').forEach(element => {
-    element.addEventListener('click', (e) => {
-      const id = (e.currentTarget as HTMLElement).getAttribute('data-id');
-      if (id) toggleChecklistItem(id);
+  try {
+    button.disabled = true;
+    if (progressContainer) progressContainer.style.display = 'block';
+
+    addLog('🔍 Starting checklist auto-review...');
+    if (progressText) progressText.textContent = 'Analyzing checklist table...';
+    if (progressBar) progressBar.style.width = '10%';
+
+    // Load mock operations
+    addLog(`📦 Loading ${MOCK_CHECKLIST_OPERATIONS.length} checklist review operations...`);
+    if (progressBar) progressBar.style.width = '25%';
+
+    // Execute operations
+    addLog('✍️ Populating checklist with review data...');
+    if (progressText) progressText.textContent = 'Filling checklist cells...';
+    if (progressBar) progressBar.style.width = '50%';
+
+    await executeChecklistOperations(MOCK_CHECKLIST_OPERATIONS, (progress) => {
+      if (progressBar) {
+        progressBar.style.width = `${50 + (progress * 40)}%`;
+      }
+      addLog(`  ✓ Completed operation ${Math.floor(progress * MOCK_CHECKLIST_OPERATIONS.length)}/${MOCK_CHECKLIST_OPERATIONS.length}`);
     });
+
+    if (progressBar) progressBar.style.width = '100%';
+    addLog(`✅ Successfully populated ${MOCK_CHECKLIST_OPERATIONS.length} checklist items!`);
+
+    // Success message
+    statusElement.innerHTML = `
+      <div style="padding: 12px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px;">
+        <div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Checklist auto-review complete!</div>
+        <div style="font-size: 13px; color: #1b5e20; margin-bottom: 8px;">
+          Populated ${MOCK_CHECKLIST_OPERATIONS.length} items with initials and review comments
+        </div>
+        <div style="max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; background: white; padding: 8px; border-radius: 4px;">
+          ${debugLog.map(line => `<div style="margin: 2px 0;">${line}</div>`).join('')}
+        </div>
+      </div>
+    `;
+    if (progressText) progressText.textContent = 'Complete!';
+
+    setTimeout(() => {
+      if (progressContainer) progressContainer.style.display = 'none';
+    }, 3000);
+
+  } catch (error) {
+    console.error('[FATAL ERROR]', error);
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : '';
+
+    statusElement.innerHTML = `
+      <div style="padding: 12px; background: #ffebee; border: 2px solid #d32f2f; border-radius: 4px;">
+        <div style="color: #d32f2f; font-weight: bold; margin-bottom: 8px; font-size: 16px;">❌ AUTO-REVIEW FAILED</div>
+        <div style="margin-bottom: 12px; color: #333; font-size: 14px;">${errorMessage}</div>
+        <div style="margin-bottom: 12px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; background: white; padding: 8px; border-radius: 4px;">
+          ${debugLog.map(line => `<div style="margin: 2px 0;">${line}</div>`).join('')}
+        </div>
+        <details style="margin-top: 8px;">
+          <summary style="cursor: pointer; color: #d32f2f; font-size: 12px;">Show stack trace</summary>
+          <pre style="font-size: 10px; margin-top: 4px; background: #f5f5f5; padding: 8px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">${errorStack || 'No stack trace available'}</pre>
+        </details>
+      </div>
+    `;
+
+    if (progressText) {
+      progressText.textContent = 'FAILED';
+      progressText.style.color = '#d32f2f';
+    }
+
+    if (progressBar) {
+      (progressBar as HTMLElement).style.background = '#d32f2f';
+    }
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/**
+ * Execute checklist operations on Word document
+ */
+async function executeChecklistOperations(
+  operations: FillChecklistCellOperation[],
+  onProgress?: (progress: number) => void
+): Promise<void> {
+  return Word.run(async (context) => {
+    console.log('[Checklist] Starting execution, count:', operations.length);
+
+    // Enable track changes
+    context.document.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
+
+    try {
+      context.document.properties.author = "Kenneth AI";
+      context.document.properties.load('author');
+    } catch (e) {
+      console.warn("Could not set author:", e);
+    }
+
+    await context.sync();
+
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (let i = 0; i < operations.length; i++) {
+      const operation = operations[i];
+      console.log(`[Operation ${i + 1}/${operations.length}] Filling checklist cell at row ${operation.row}`);
+
+      try {
+        await executeFillChecklistCell(context, operation);
+        await context.sync();
+        successCount++;
+
+        if (onProgress) {
+          onProgress((i + 1) / operations.length);
+        }
+      } catch (error) {
+        failureCount++;
+        console.error(`Operation ${i} failed:`, error);
+      }
+    }
+
+    console.log('[Checklist] Complete:', { total: operations.length, success: successCount, failed: failureCount });
   });
 }
 
 /**
- * Toggle a checklist item
+ * Execute fillChecklistCell operation
  */
-function toggleChecklistItem(id: string) {
-  const item = checklistItems.find(i => i.id === id);
-  if (item) {
-    item.checked = !item.checked;
-    renderChecklist();
+async function executeFillChecklistCell(
+  context: Word.RequestContext,
+  operation: FillChecklistCellOperation
+): Promise<void> {
+  const tables = context.document.body.tables;
+  tables.load('items');
+  await context.sync();
+
+  if (operation.tableIndex >= tables.items.length) {
+    console.warn(`Table ${operation.tableIndex} not found`);
+    return;
   }
-}
 
-/**
- * Reset checklist
- */
-function handleResetChecklist() {
-  checklistItems = checklistItems.map(item => ({ ...item, checked: false }));
-  renderChecklist();
-  showNotification('Checklist reset', 'info');
-}
+  const table = tables.items[operation.tableIndex];
+  const rows = table.rows;
+  rows.load('items');
+  await context.sync();
 
-/**
- * Auto-check for common issues
- */
-async function handleAutoCheck() {
-  const button = document.getElementById('auto-check-btn') as HTMLButtonElement;
-  if (!button) return;
+  if (operation.row >= rows.items.length) {
+    console.warn(`Row ${operation.row} not found`);
+    return;
+  }
 
-  button.disabled = true;
-  button.textContent = 'Checking...';
+  const row = rows.items[operation.row];
+  const cells = row.cells;
+  cells.load('items');
+  await context.sync();
 
+  if (operation.cell >= cells.items.length) {
+    console.warn(`Cell ${operation.cell} not found`);
+    return;
+  }
+
+  const cell = cells.items[operation.cell];
+  cell.body.clear();
+  const insertedRange = cell.body.insertText(operation.value, Word.InsertLocation.start);
+
+  // Add comment with checklist metadata
   try {
-    await Word.run(async (context) => {
-      const body = context.document.body;
-      body.load('text');
-      await context.sync();
-
-      const text = body.text;
-
-      // Check for placeholders
-      const placeholderRegex = /\{\{[^}]+\}\}/g;
-      const placeholders = text.match(placeholderRegex);
-
-      if (!placeholders || placeholders.length === 0) {
-        const item = checklistItems.find(i => i.id === 'placeholders-filled');
-        if (item) item.checked = true;
-      }
-
-      renderChecklist();
-      showNotification('Auto-check complete!', 'success');
-    });
-  } catch (error) {
-    console.error('Auto-check failed:', error);
-    showNotification('Auto-check failed', 'error');
-  } finally {
-    button.disabled = false;
-    button.textContent = '🔍 Auto-check Document';
+    const commentText = buildChecklistCommentText(operation);
+    // Insert comment on the text range, not the cell body
+    insertedRange.insertComment(commentText);
+    console.log('Comment added successfully to cell:', operation.row, operation.cell);
+  } catch (e) {
+    console.warn('Could not add comment to checklist cell:', e);
   }
 }
 
 /**
- * Show notification
+ * Build comment text with checklist metadata
  */
-function showNotification(message: string, type: 'success' | 'error' | 'info' = 'info') {
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed; top: 20px; right: 20px;
-    padding: 16px 24px; border-radius: 8px;
-    color: white; font-weight: 600; z-index: 9999;
-    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    animation: slideIn 0.3s ease;
-  `;
-  notification.textContent = message;
-  document.body.appendChild(notification);
+function buildChecklistCommentText(operation: FillChecklistCellOperation): string {
+  const lines: string[] = [];
+  const metadata = operation.checklistMetadata;
 
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  // Header
+  lines.push('🤖 Kenneth AI - Checklist Auto-Review');
+  lines.push('');
+
+  // Status
+  lines.push(`Status: ${metadata.status}`);
+  lines.push('');
+
+  // Commentary
+  lines.push('Commentary:');
+  lines.push(metadata.commentary);
+  lines.push('');
+
+  // References
+  if (metadata.references && metadata.references.length > 0) {
+    lines.push('References:');
+    metadata.references.forEach(ref => {
+      lines.push(`  • ${ref}`);
+    });
+    lines.push('');
+  }
+
+  // Footer
+  lines.push('---');
+  lines.push('Generated by Kenneth AI (Demo Mode)');
+  lines.push('💡 Using mock data from mockChecklistData.ts');
+
+  return lines.join('\n');
 }
 
 /**
@@ -218,31 +271,39 @@ export function getChecklistTabHTML(): string {
   return `
     <div id="checklist-tab" class="tab-content" style="display: none; flex: 1; background: white; padding: 20px; overflow: auto; flex-direction: column;">
       <div style="max-width: 600px; width: 100%; margin: 0 auto;">
-        <h3 style="margin-bottom: 8px; color: #333;">✅ Document Checklist</h3>
+        <h3 style="margin-bottom: 8px; color: #333;">✅ Checklist Auto-Review</h3>
         <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
-          Track your document completion progress
+          Automatically populate the checklist "Initials & Date" column with review data
         </p>
 
+        <!-- Instructions -->
+        <div style="margin-bottom: 20px; padding: 12px; background: #f0f7ff; border-left: 3px solid #2196F3; border-radius: 4px;">
+          <div style="font-weight: 600; color: #1976D2; margin-bottom: 4px;">📋 How it works:</div>
+          <div style="font-size: 13px; color: #424242; line-height: 1.6;">
+            1. Ensure your document contains a checklist table<br>
+            2. Click "Auto-review Checklist" below<br>
+            3. The add-in will populate the "Initials & Date" column<br>
+            4. Each cell will have a comment with status, commentary, and references
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div style="margin-bottom: 20px;">
+          <button id="auto-review-checklist-btn" style="width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            🔍 Auto-review Checklist
+          </button>
+        </div>
+
         <!-- Progress Bar -->
-        <div style="margin-bottom: 24px;">
-          <div id="checklist-progress-text" style="font-size: 13px; color: #666; margin-bottom: 8px;">0 of 8 completed (0%)</div>
-          <div style="width: 100%; height: 12px; background: #f0f0f0; border-radius: 6px; overflow: hidden;">
+        <div id="checklist-progress-container" style="display: none; margin-bottom: 16px;">
+          <div id="checklist-progress-text" style="font-size: 13px; color: #666; margin-bottom: 8px;">Processing...</div>
+          <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
             <div id="checklist-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s ease;"></div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-          <button id="auto-check-btn" style="flex: 1; padding: 10px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;">
-            🔍 Auto-check Document
-          </button>
-          <button id="reset-checklist-btn" style="padding: 10px 16px; background: #f3f4f6; color: #666; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;">
-            Reset
-          </button>
-        </div>
-
-        <!-- Checklist Items -->
-        <div id="checklist-items">
+        <!-- Status Display -->
+        <div id="checklist-status">
           <!-- Populated by JavaScript -->
         </div>
       </div>
