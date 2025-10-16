@@ -1,0 +1,114 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# macOS
+.DS_Store
+
+# debug files
+debug/
+
+# dependencies
+*node_modules/
+.pnpm-store/
+
+# next.js
+*.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+!.env.example
+
+# local env files
+.env*.local
+
+# Playwright
+playwright/.auth/
+node_modules/
+/test-results/
+/playwright-report/
+/playwright/report/
+/blob-report/
+/playwright/.cache/
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# General Build output / Distribution
+# dist/  # Uncomment if you use a 'dist' folder for builds
+
+# Coverage reports
+# coverage/ # Uncomment if you generate coverage reports
+# .nyc_output/ # Uncomment if you use nyc for coverage
+
+# npm lock file (using pnpm)
+package-lock.json
+
+# local development scripts
+/scripts/apply-registration-number-migration.js
+/scripts/create-correct-template.js
+/scripts/create-cvl-template.js
+/scripts/create-db-templates.js
+/scripts/create-legacy-template.js
+/scripts/create-minimal-template.js
+/scripts/create-onboarding-questionnaire.ts
+/scripts/create-templates.js
+/scripts/init-templates.js
+/scripts/run-director-migration.js
+/scripts/run-migration.js
+/scripts/run-natures-of-control-migration.js
+/scripts/run-shareholder-migration.js
+/scripts/setup-fresh-templates.js
+/scripts/setup-templates.js
+/scripts/test-db-connection.js
+
+
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/playwright/report/
+/blob-report/
+/playwright/.cache/
+
+# Docker
+docker-compose.override.yml
+
+
+.mcp.json
+
+#public files
+public/ahc_docs/
+public/uploads/
+public/nutrient-viewer
+
+# Coverage reports
+coverage/
+
+# Logs
+/pipeline-stage-logs/
+dev.log
+
+public/checklists

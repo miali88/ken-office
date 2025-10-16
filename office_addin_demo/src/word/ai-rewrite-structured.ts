@@ -7,6 +7,7 @@
 /* global Word */
 
 import type { DocumentStructure, TableStructure, DocumentOperation } from './types';
+import { MOCK_LLM_OPERATIONS } from './mockLLMResponse';
 
 /**
  * Main handler for structured AI document rewrite
@@ -67,29 +68,23 @@ export async function handleStructuredAIRewrite(): Promise<void> {
     }
 
     // =========================================================================
-    // STEP 2: Send to backend API
+    // STEP 2: Load mock AI response (DEMO MODE - NO BACKEND)
     // =========================================================================
-    addLog("🤖 STEP 2/3: Sending to backend...");
-    if (progressText) progressText.textContent = "Step 2/3: AI processing";
+    addLog("🤖 STEP 2/3: Loading mock AI response...");
+    if (progressText) progressText.textContent = "Step 2/3: AI processing (mock data)";
     if (progressBar) progressBar.style.width = '40%';
 
     let operations: DocumentOperation[];
     try {
-      addLog("  Connecting to /api/word-agent/rewrite");
-      addLog(`  Payload size: ${JSON.stringify({ documentText: structure.text }).length} bytes`);
+      addLog("  Loading pre-configured operations...");
 
-      operations = await sendToBackend(structure, addLog);
+      operations = await getMockOperations(structure, addLog);
 
-      addLog(`  ✅ Backend returned ${operations.length} operations`);
+      addLog(`  ✅ Loaded ${operations.length} operations from mock data`);
       if (progressBar) progressBar.style.width = '66%';
-    } catch (backendError) {
-      const errMsg = backendError instanceof Error ? backendError.message : String(backendError);
-      addLog(`❌ BACKEND REQUEST FAILED: ${errMsg}`, true);
-
-      if (errMsg.includes('fetch') || errMsg.includes('connect') || errMsg.includes('Failed to fetch')) {
-        addLog(`💡 Is the backend running? Check: http://localhost:3001`, true);
-      }
-
+    } catch (mockError) {
+      const errMsg = mockError instanceof Error ? mockError.message : String(mockError);
+      addLog(`❌ MOCK DATA LOADING FAILED: ${errMsg}`, true);
       throw new Error(`Step 2 failed: ${errMsg}`);
     }
 
@@ -185,75 +180,22 @@ async function extractDocumentSimplified(): Promise<DocumentStructure> {
 }
 
 /**
- * Send to backend with detailed logging
+ * Load mock operations (DEMO MODE - NO BACKEND)
+ * Simulates what a real AI backend would return
  */
-async function sendToBackend(structure: DocumentStructure, addLog: (msg: string, isError?: boolean) => void): Promise<DocumentOperation[]> {
-  const caseId = 'cmfivedyx0001c96zlzkskb7b';
+async function getMockOperations(
+  structure: DocumentStructure,
+  addLog: (msg: string, isError?: boolean) => void
+): Promise<DocumentOperation[]> {
+  addLog("  📦 Using hardcoded mock data (no backend required)");
 
-  const requestBody = {
-    documentText: structure.text,
-    documentStructure: structure,
-    caseId,
-    useStructuredOperations: true,
-    instructions: 'Fill in all placeholders with accurate case information'
-  };
+  // Simulate realistic network/processing delay for better UX
+  await new Promise(resolve => setTimeout(resolve, 800));
 
-  addLog(`  Request body created: ${JSON.stringify(requestBody).length} bytes`);
+  addLog(`  ✅ Mock data contains ${MOCK_LLM_OPERATIONS.length} operations`);
+  addLog(`  ℹ️  This is DEMO MODE - edit mockLLMResponse.ts to change operations`);
 
-  try {
-    addLog(`  Making fetch() call...`);
-
-    // Use relative URL to avoid HTTPS → HTTP mixed content blocking
-    const response = await fetch(`/api/word-agent/rewrite`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    addLog(`  Response received: ${response.status} ${response.statusText}`);
-
-    if (!response.ok) {
-      let errorText = '';
-      try {
-        errorText = await response.text();
-        addLog(`  Error response: ${errorText.substring(0, 200)}`, true);
-        const errorJson = JSON.parse(errorText);
-        throw new Error(`API ${response.status}: ${errorJson.error?.message || errorJson.message || response.statusText}`);
-      } catch (parseError) {
-        throw new Error(`API ${response.status}: ${errorText.substring(0, 200) || response.statusText}`);
-      }
-    }
-
-    const resultText = await response.text();
-    addLog(`  Response text length: ${resultText.length} bytes`);
-
-    let result;
-    try {
-      result = JSON.parse(resultText);
-    } catch (parseError) {
-      addLog(`  JSON parse error: ${parseError}`, true);
-      addLog(`  Response preview: ${resultText.substring(0, 300)}`, true);
-      throw new Error(`Invalid JSON from server`);
-    }
-
-    if (!result.success) {
-      const errorMsg = result.error?.message || result.message || 'Backend processing failed';
-      addLog(`  Backend reported failure: ${errorMsg}`, true);
-      throw new Error(errorMsg);
-    }
-
-    addLog(`  Success! Operations received: ${result.operations?.length || 0}`);
-    return result.operations || [];
-
-  } catch (error) {
-    // Network error detection
-    if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
-      addLog(`  Network error: Cannot connect to backend`, true);
-      throw new Error(`Cannot connect to /api/word-agent/rewrite - Is the server running?`);
-    }
-
-    throw error;
-  }
+  return MOCK_LLM_OPERATIONS;
 }
 
 /**
