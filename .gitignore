@@ -7,15 +7,18 @@
 debug/
 
 # dependencies
-*node_modules/
+node_modules/
+**/node_modules/
 .pnpm-store/
 
 # next.js
 *.next/
 /out/
 
+# build output
+dist/
+**/dist/
 /dist
-# production
 /build
 
 # debug
