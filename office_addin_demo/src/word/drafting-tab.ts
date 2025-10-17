@@ -55,13 +55,6 @@ export function getDraftingTabHTML(): string {
   return `
     <div id="drafting-tab" class="tab-content active" style="display: flex; flex: 1; background: white; padding: 20px; overflow: auto; flex-direction: column; align-items: center; justify-content: flex-start;">
       <!-- DEBUG: Test Backend Connection -->
-      <div style="width: 100%; max-width: 500px; margin-bottom: 20px; padding: 16px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
-        <h3 style="margin-bottom: 8px; color: #856404;">🔧 Debug Test</h3>
-        <button id="test-ping-btn" style="width: 100%; padding: 10px; background: #ffc107; color: #000; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; margin-bottom: 8px;">
-          Test Network Connection
-        </button>
-        <div id="test-result" style="font-size: 12px; color: #856404; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;"></div>
-      </div>
 
       <!-- AI Rewrite Section -->
       <div style="width: 100%; max-width: 500px; margin-bottom: 30px;">

@@ -95,7 +95,7 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="Kenneth AI"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Show Kenneth AI"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Kenneth AI"/>
         <bt:String id="ActionButton.Label" DefaultValue="Quick Action"/>
       </bt:ShortStrings>
       <bt:LongStrings>

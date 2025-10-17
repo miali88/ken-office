@@ -100,6 +100,12 @@ module.exports = async (env, options) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
           secure: false,
+        },
+        {
+          context: ['/chat'],
+          target: 'https://localhost:3001',
+          changeOrigin: true,
+          secure: false,
         }
       ],
     },

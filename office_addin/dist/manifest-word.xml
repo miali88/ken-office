@@ -76,10 +76,10 @@
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with Kenneth AI!"/>
         <bt:String id="CommandsGroup.Label" DefaultValue="Kenneth AI"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Show Kenneth AI"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Kenneth AI"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Kenneth AI is ready to assist with your documents. Click 'Show Kenneth AI' to get started."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Kenneth AI is ready to assist with your documents. Click 'Kenneth AI' to get started."/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open Kenneth AI assistant"/>
       </bt:LongStrings>
     </Resources>

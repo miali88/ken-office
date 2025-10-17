@@ -12,7 +12,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
   {
     type: "replaceText",
     target: "(years ending DD MM YYYY",
-    value: "(years ending 31 March 2022, 31 March 2023, and 31 March 2024",
+    value: "years ending 31 March 2024",
     replaceAll: true,
     metadata: {
       confidence: "medium",

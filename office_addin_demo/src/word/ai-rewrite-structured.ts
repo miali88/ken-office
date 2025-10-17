@@ -220,15 +220,42 @@ async function executeOperations(operations: DocumentOperation[]): Promise<void>
     let successCount = 0;
     let failureCount = 0;
 
-    for (let i = 0; i < operations.length; i++) {
-      const operation = operations[i];
-      console.log(`[Operation ${i + 1}/${operations.length}] Type: ${operation.type}`);
+    // Group fillTableCell operations by tableIndex
+    const tableOperationsMap = new Map<number, Array<Extract<DocumentOperation, { type: 'fillTableCell' }>>>();
+    const nonTableOperations: DocumentOperation[] = [];
+
+    for (const operation of operations) {
+      if (operation.type === 'fillTableCell') {
+        const tableOps = tableOperationsMap.get(operation.tableIndex) || [];
+        tableOps.push(operation);
+        tableOperationsMap.set(operation.tableIndex, tableOps);
+      } else {
+        nonTableOperations.push(operation);
+      }
+    }
+
+    // Execute table operations grouped by table (one comment per table)
+    const tableEntries = Array.from(tableOperationsMap.entries());
+    for (const [tableIndex, tableOps] of tableEntries) {
+      console.log(`[Table ${tableIndex}] Processing ${tableOps.length} cell operations`);
+
+      try {
+        await executeTableOperations(context, tableIndex, tableOps);
+        await context.sync();
+        successCount += tableOps.length;
+      } catch (error) {
+        failureCount += tableOps.length;
+        console.error(`Table ${tableIndex} operations failed:`, error);
+      }
+    }
+
+    // Execute non-table operations individually
+    for (let i = 0; i < nonTableOperations.length; i++) {
+      const operation = nonTableOperations[i];
+      console.log(`[Operation ${i + 1}/${nonTableOperations.length}] Type: ${operation.type}`);
 
       try {
         switch (operation.type) {
-          case 'fillTableCell':
-            await executeFillTableCell(context, operation);
-            break;
           case 'replacePlaceholder':
             await executeReplacePlaceholder(context, operation);
             break;
@@ -257,7 +284,84 @@ async function executeOperations(operations: DocumentOperation[]): Promise<void>
 }
 
 /**
- * Execute fillTableCell operation
+ * Execute all table operations for a specific table and add ONE comment
+ */
+async function executeTableOperations(
+  context: Word.RequestContext,
+  tableIndex: number,
+  operations: Array<Extract<DocumentOperation, { type: 'fillTableCell' }>>
+): Promise<void> {
+  const tables = context.document.body.tables;
+  tables.load('items');
+  await context.sync();
+
+  if (tableIndex >= tables.items.length) {
+    console.warn(`Table ${tableIndex} not found`);
+    return;
+  }
+
+  const table = tables.items[tableIndex];
+  const rows = table.rows;
+  rows.load('items');
+  await context.sync();
+
+  // Track which cells were modified for the comment summary
+  const modifiedCells: Array<{ row: number; cell: number; value: string }> = [];
+
+  // Fill all cells in this table
+  for (const operation of operations) {
+    if (operation.row >= rows.items.length) {
+      console.warn(`Row ${operation.row} not found in table ${tableIndex}`);
+      continue;
+    }
+
+    const row = rows.items[operation.row];
+    const cells = row.cells;
+    cells.load('items');
+    await context.sync();
+
+    if (operation.cell >= cells.items.length) {
+      console.warn(`Cell ${operation.cell} not found in row ${operation.row}`);
+      continue;
+    }
+
+    const cell = cells.items[operation.cell];
+    cell.body.clear();
+    cell.body.insertText(operation.value, Word.InsertLocation.start);
+
+    modifiedCells.push({
+      row: operation.row,
+      cell: operation.cell,
+      value: operation.value
+    });
+  }
+
+  // Add ONE comment to the first modified cell
+  if (modifiedCells.length > 0 && operations.length > 0) {
+    try {
+      // Get the first modified cell to attach the comment
+      const firstOp = operations[0];
+      const firstRow = rows.items[firstOp.row];
+      const firstCells = firstRow.cells;
+      firstCells.load('items');
+      await context.sync();
+
+      const firstCell = firstCells.items[firstOp.cell];
+      const range = firstCell.body.getRange();
+
+      // Build a comprehensive comment for all table changes
+      const commentText = buildTableCommentText(tableIndex, modifiedCells, operations[0].metadata);
+      range.insertComment(commentText);
+
+      console.log(`Added single comment to table ${tableIndex} summarizing ${modifiedCells.length} cell changes`);
+    } catch (e) {
+      console.warn('Could not add comment to table:', e);
+    }
+  }
+}
+
+/**
+ * Execute fillTableCell operation (LEGACY - kept for compatibility)
  */
 async function executeFillTableCell(
   context: Word.RequestContext,
@@ -498,6 +602,66 @@ function buildCommentText(
     ? insertedValue.substring(0, 150) + '...'
     : insertedValue;
   lines.push(`New value: "${displayValue}"`);
+  lines.push('');
+
+  // Metadata section
+  if (metadata) {
+    lines.push('--- Metadata ---');
+
+    if (metadata.confidence) {
+      const confidenceEmoji = metadata.confidence === 'high' ? '✅' : metadata.confidence === 'medium' ? '⚠️' : '❓';
+      lines.push(`${confidenceEmoji} Confidence: ${metadata.confidence}`);
+    }
+
+    if (metadata.source) {
+      lines.push(`📁 Source: ${metadata.source}`);
+    }
+
+    if (metadata.reasoning) {
+      lines.push(`💭 Reasoning: ${metadata.reasoning}`);
+    }
+
+    lines.push('');
+  }
+
+  // Footer
+  lines.push('---');
+  lines.push('Author: Kenneth AI (Demo Mode)');
+  lines.push('💡 Using mock data from mockLLMResponse.ts');
+
+  return lines.join('\n');
+}
+
+/**
+ * Build consolidated comment text for table operations
+ */
+function buildTableCommentText(
+  tableIndex: number,
+  modifiedCells: Array<{ row: number; cell: number; value: string }>,
+  metadata?: { confidence?: string; source?: string; reasoning?: string }
+): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`🤖 Kenneth AI - fillTableCell`);
+  lines.push('');
+  lines.push(`Updated ${modifiedCells.length} cells in table ${tableIndex}`);
+  lines.push('');
+
+  // Show a sample of the changes (first few cells)
+  const sampleSize = Math.min(3, modifiedCells.length);
+  for (let i = 0; i < sampleSize; i++) {
+    const cell = modifiedCells[i];
+    const displayValue = cell.value.length > 50
+      ? cell.value.substring(0, 50) + '...'
+      : cell.value;
+    lines.push(`  Row ${cell.row}, Cell ${cell.cell}: "${displayValue}"`);
+  }
+
+  if (modifiedCells.length > sampleSize) {
+    lines.push(`  ... and ${modifiedCells.length - sampleSize} more cells`);
+  }
+
   lines.push('');
 
   // Metadata section
