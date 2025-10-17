@@ -1,2 +1,0 @@
-Office.onReady(function(){}),Office.actions&&Office.actions.associate("action",function(e){var i={type:Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,message:"Kenneth AI action performed.",icon:"Icon.80x80",persistent:!0};Office.context.mailbox&&Office.context.mailbox.item&&Office.context.mailbox.item.notificationMessages.replaceAsync("ActionPerformanceNotification",i),e.completed()});
-//# sourceMappingURL=commands.js.map

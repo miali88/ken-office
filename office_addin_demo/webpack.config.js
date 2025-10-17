@@ -43,7 +43,7 @@ module.exports = async (env, options) => {
         },
         {
           test: /\.css$/,
-          use: ["style-loader", "css-loader"],
+          use: ["style-loader", "css-loader", "postcss-loader"],
         },
         {
           test: /\.(png|jpg|jpeg|gif|ico)$/,
