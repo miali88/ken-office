@@ -5,7 +5,11 @@
 /* global Word */
 
 import { MOCK_CHECKLIST_OPERATIONS } from './mockChecklistData';
-import type { FillChecklistCellOperation } from './types';
+import { MOCK_PERIODIC_CASE_REVIEW_OPERATIONS } from './mockPeriodicCaseReviewData';
+import { detectDocumentType, getDocumentTypeName } from './document-detector';
+import { executePeriodicCaseReviewOperations } from './periodic-case-review-executor';
+import { DocumentType } from './types';
+import type { FillChecklistCellOperation, DocumentOperation } from './types';
 
 /**
  * Initialize the Checklist tab
@@ -56,34 +60,66 @@ async function handleAutoReviewChecklist() {
     if (progressContainer) progressContainer.style.display = 'block';
 
     addLog('🔍 Starting checklist auto-review...');
-    if (progressText) progressText.textContent = 'Analyzing checklist table...';
-    if (progressBar) progressBar.style.width = '10%';
+    if (progressText) progressText.textContent = 'Detecting document type...';
+    if (progressBar) progressBar.style.width = '5%';
 
-    // Load mock operations
-    addLog(`📦 Loading ${MOCK_CHECKLIST_OPERATIONS.length} checklist review operations...`);
+    // Detect document type
+    const docType = await detectDocumentType();
+    const docTypeName = getDocumentTypeName(docType);
+    addLog(`📄 Detected document type: ${docTypeName}`);
+    if (progressBar) progressBar.style.width = '15%';
+
+    // Check if document type is supported
+    if (docType === DocumentType.UNKNOWN) {
+      throw new Error('Unable to detect document type. Please ensure you have opened either a Checklist 3 or Periodic Case Review document.');
+    }
+
+    // Load appropriate mock operations based on document type
+    let operations: DocumentOperation[];
+    if (docType === DocumentType.CHECKLIST_3) {
+      operations = MOCK_CHECKLIST_OPERATIONS;
+      addLog(`📦 Loading ${operations.length} Checklist 3 review operations...`);
+    } else if (docType === DocumentType.PERIODIC_CASE_REVIEW) {
+      operations = MOCK_PERIODIC_CASE_REVIEW_OPERATIONS;
+      addLog(`📦 Loading ${operations.length} Periodic Case Review operations...`);
+    } else {
+      throw new Error(`Unsupported document type: ${docType}`);
+    }
     if (progressBar) progressBar.style.width = '25%';
 
-    // Execute operations
-    addLog('✍️ Populating checklist with review data...');
-    if (progressText) progressText.textContent = 'Filling checklist cells...';
+    // Execute operations based on document type
+    addLog('✍️ Populating document with review data...');
+    if (progressText) progressText.textContent = 'Filling document fields...';
     if (progressBar) progressBar.style.width = '50%';
 
-    await executeChecklistOperations(MOCK_CHECKLIST_OPERATIONS, (progress) => {
-      if (progressBar) {
-        progressBar.style.width = `${50 + (progress * 40)}%`;
-      }
-      addLog(`  ✓ Completed operation ${Math.floor(progress * MOCK_CHECKLIST_OPERATIONS.length)}/${MOCK_CHECKLIST_OPERATIONS.length}`);
-    });
+    if (docType === DocumentType.CHECKLIST_3) {
+      await executeChecklistOperations(operations as FillChecklistCellOperation[], (progress) => {
+        if (progressBar) {
+          progressBar.style.width = `${50 + (progress * 40)}%`;
+        }
+        addLog(`  ✓ Completed operation ${Math.floor(progress * operations.length)}/${operations.length}`);
+      });
+    } else if (docType === DocumentType.PERIODIC_CASE_REVIEW) {
+      await executePeriodicCaseReviewOperations(operations, (progress) => {
+        if (progressBar) {
+          progressBar.style.width = `${50 + (progress * 40)}%`;
+        }
+        addLog(`  ✓ Completed operation ${Math.floor(progress * operations.length)}/${operations.length}`);
+      });
+    }
 
     if (progressBar) progressBar.style.width = '100%';
-    addLog(`✅ Successfully populated ${MOCK_CHECKLIST_OPERATIONS.length} checklist items!`);
+    addLog(`✅ Successfully populated ${operations.length} items in ${docTypeName}!`);
 
     // Success message
     statusElement.innerHTML = `
       <div style="padding: 12px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px;">
         <div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Checklist auto-review complete!</div>
+        <div style="font-size: 13px; color: #1b5e20; margin-bottom: 4px;">
+          <strong>Document Type:</strong> ${docTypeName}
+        </div>
         <div style="font-size: 13px; color: #1b5e20; margin-bottom: 8px;">
-          Populated ${MOCK_CHECKLIST_OPERATIONS.length} items with initials and review comments
+          Populated ${operations.length} items with initials and review comments
         </div>
         <div style="max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; background: white; padding: 8px; border-radius: 4px;">
           ${debugLog.map(line => `<div style="margin: 2px 0;">${line}</div>`).join('')}
@@ -275,10 +311,11 @@ export function getChecklistTabHTML(): string {
         <div style="margin-bottom: 20px; padding: 12px; background: #f0f7ff; border-left: 3px solid #2196F3; border-radius: 4px;">
           <div style="font-weight: 600; color: #1976D2; margin-bottom: 4px;">📋 How it works:</div>
           <div style="font-size: 13px; color: #424242; line-height: 1.6;">
-            1. Ensure your document contains a checklist table<br>
+            1. Open either a <strong>Checklist 3</strong> or <strong>Periodic Case Review</strong> document<br>
             2. Click "Auto-review Checklist" below<br>
-            3. The add-in will populate the "Initials & Date" column<br>
-            4. Each cell will have a comment with status, commentary, and references
+            3. The add-in will detect your document type automatically<br>
+            4. All fields will be populated with synthetic review data<br>
+            5. Each entry will have a comment with status, commentary, and references
           </div>
         </div>
 

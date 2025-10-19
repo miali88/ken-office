@@ -2,13 +2,21 @@
  * Word Agent Operation Types (Copy for frontend use)
  */
 
+export enum DocumentType {
+  CHECKLIST_3 = 'CHECKLIST_3',
+  PERIODIC_CASE_REVIEW = 'PERIODIC_CASE_REVIEW',
+  UNKNOWN = 'UNKNOWN'
+}
+
 export type DocumentOperation =
   | FillTableCellOperation
   | ReplacePlaceholderOperation
   | ReplaceTextOperation
   | DeleteTextOperation
   | InsertTextOperation
-  | FillChecklistCellOperation;
+  | FillChecklistCellOperation
+  | FillFormFieldOperation
+  | CheckBoxOperation;
 
 export interface FillTableCellOperation {
   type: 'fillTableCell';
@@ -17,6 +25,7 @@ export interface FillTableCellOperation {
   cell: number;
   value: string;
   metadata?: OperationMetadata;
+  checklistMetadata?: ChecklistMetadata;
 }
 
 export interface ReplacePlaceholderOperation {
@@ -93,4 +102,20 @@ export interface SectionStructure {
   heading?: string;
   content: string;
   level?: number;
+}
+
+export interface FillFormFieldOperation {
+  type: 'fillFormField';
+  fieldName: string;
+  value: string;
+  checklistMetadata?: ChecklistMetadata;
+}
+
+export interface CheckBoxOperation {
+  type: 'checkbox';
+  tableIndex: number;
+  row: number;
+  cell: number;
+  value: 'Yes' | 'No' | 'N/A' | 'X';
+  checklistMetadata?: ChecklistMetadata;
 }
