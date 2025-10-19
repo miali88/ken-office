@@ -96,9 +96,6 @@ export async function handleStructuredAIRewrite(): Promise<void> {
     // =========================================================================
     // STEP 3: Execute operations
     // =========================================================================
-    addLog("✍️ STEP 3/3: Applying changes to document...");
-    if (progressText) progressText.textContent = "Step 3/3: Applying changes";
-    if (progressBar) progressBar.style.width = '75%';
 
     try {
       await executeOperations(operations);

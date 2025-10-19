@@ -5,6 +5,9 @@
 
 /* global document */
 
+// Import Tailwind CSS styles
+import '../outlook/styles/globals.css';
+
 import { initializeDraftingTab, getDraftingTabHTML } from './drafting-tab';
 import { initializeAIChatTab, getAIChatTabHTML } from './ai-chat-tab';
 import { initializeChecklistTab, getChecklistTabHTML } from './checklist-tab';
