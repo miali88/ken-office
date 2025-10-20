@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Loader2 } from 'lucide-react';
+import { CaseSelector } from './components/CaseSelector';
 import { DocumentSelector } from './components/DocumentSelector';
 
 type Task = {
@@ -92,8 +93,31 @@ export function DraftingTabApp({ onStartRewrite }: DraftingTabAppProps) {
       flexDirection: 'column',
       gap: '16px'
     }}>
+      {/* Case Selector - Always visible */}
+      <div>
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          color: '#4b5563',
+          marginBottom: '8px',
+          fontWeight: 500
+        }}>
+          Case selected:
+        </label>
+        <CaseSelector />
+      </div>
+
       {/* Document Selector - Always visible */}
       <div>
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          color: '#4b5563',
+          marginBottom: '8px',
+          fontWeight: 500
+        }}>
+          Document template
+        </label>
         <DocumentSelector />
       </div>
 

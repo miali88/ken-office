@@ -586,10 +586,5 @@ function buildTableCommentText(
   });
   lines.push('');
 
-  // Footer
-  lines.push('---');
-  lines.push('Author: Kenneth AI (Demo Mode)');
-  lines.push('💡 Using mock data from mockLLMResponse.ts');
-
   return lines.join('\n');
 }
