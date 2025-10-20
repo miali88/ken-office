@@ -311,7 +311,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 2,
     cell: 0,
-    value: "RICHARDSON, James Michael",
+    value: "Mr James Michael Richardson",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -344,7 +344,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 3,
     cell: 0,
-    value: "CHEN, Sarah Wei",
+    value: "Ms Sarah Wei Chen",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -377,7 +377,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 4,
     cell: 0,
-    value: "PATEL, Amir Shah",
+    value: "Mr Amir Shah Patel",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -443,7 +443,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 6,
     cell: 0,
-    value: "O'BRIEN, Catherine Anne",
+    value: "Ms Catherine Anne O'Brien",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -476,7 +476,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 7,
     cell: 0,
-    value: "ANDERSON, Marcus Lee",
+    value: "Mr Marcus Lee Anderson",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -509,7 +509,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 8,
     cell: 0,
-    value: "THOMPSON, Rebecca Jane",
+    value: "Ms Rebecca Jane Thompson",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -542,7 +542,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 9,
     cell: 0,
-    value: "WILLIAMS, David Anthony",
+    value: "Mr David Anthony Williams",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -575,7 +575,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 1,
     row: 10,
     cell: 0,
-    value: "MARTINEZ, Sofia Isabel",
+    value: "Ms Sofia Isabel Martinez",
     metadata: {
       confidence: "medium",
       source: "searchCaseDocuments"
@@ -685,7 +685,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 2,
     row: 1,
     cell: 0,
-    value: "RICHARDSON, James Michael",
+    value: "Mr James Michael Richardson",
     metadata: {
       confidence: "high",
       source: "case details"
@@ -729,7 +729,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 2,
     row: 2,
     cell: 0,
-    value: "CHEN, Sarah Wei",
+    value: "Ms Sarah Wei Chen",
     metadata: {
       confidence: "high",
       source: "case details"
@@ -773,7 +773,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 2,
     row: 3,
     cell: 0,
-    value: "PATEL, Amir Shah",
+    value: "Mr Amir Shah Patel",
     metadata: {
       confidence: "high",
       source: "case details"
@@ -817,7 +817,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 2,
     row: 4,
     cell: 0,
-    value: "THOMPSON, Rebecca Jane",
+    value: "Ms Rebecca Jane Thompson",
     metadata: {
       confidence: "high",
       source: "case details"
@@ -861,7 +861,7 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     tableIndex: 2,
     row: 5,
     cell: 0,
-    value: "ANDERSON, Marcus Lee",
+    value: "Mr Marcus Lee Anderson",
     metadata: {
       confidence: "high",
       source: "case details"

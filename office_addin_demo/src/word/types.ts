@@ -66,9 +66,9 @@ export interface OperationMetadata {
 }
 
 export interface ChecklistMetadata {
-  status: string;
-  commentary: string;
-  references: string[];
+  status?: string;
+  commentary?: string;
+  references?: string[];
 }
 
 export interface FillChecklistCellOperation {

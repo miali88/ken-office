@@ -15,15 +15,10 @@ import { updateTaskState } from './drafting-tab-app';
  */
 export async function handleStructuredAIRewrite(): Promise<void> {
   const statusElement = document.getElementById("rewrite-status");
-  const button = document.getElementById("ai-rewrite-btn") as HTMLButtonElement;
-
-  if (!statusElement || !button) {
-    alert("Required UI elements not found");
-    return;
-  }
+  const button = document.getElementById("ai-rewrite-btn") as HTMLButtonElement | null;
 
   try {
-    button.disabled = true;
+    if (button) button.disabled = true;
 
     // =========================================================================
     // STEP 1: Extract document text (SIMPLIFIED - NO TABLES)
@@ -73,25 +68,29 @@ export async function handleStructuredAIRewrite(): Promise<void> {
     // =========================================================================
     // SUCCESS!
     // =========================================================================
-    statusElement.innerHTML = `
-      <div style="padding: 12px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px; text-align: center;">
-        <div style="color: #2e7d32; font-weight: bold;">✅ Document updated successfully!</div>
-      </div>
-    `;
+    if (statusElement) {
+      statusElement.innerHTML = `
+        <div style="padding: 12px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px; text-align: center;">
+          <div style="color: #2e7d32; font-weight: bold;">✅ Document updated successfully!</div>
+        </div>
+      `;
+    }
 
   } catch (error) {
     console.error('[FATAL ERROR]', error);
 
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    statusElement.innerHTML = `
-      <div style="padding: 12px; background: #ffebee; border: 2px solid #d32f2f; border-radius: 4px; text-align: center;">
-        <div style="color: #d32f2f; font-weight: bold; margin-bottom: 8px;">❌ Process Failed</div>
-        <div style="color: #333; font-size: 14px;">${errorMessage}</div>
-      </div>
-    `;
+    if (statusElement) {
+      statusElement.innerHTML = `
+        <div style="padding: 12px; background: #ffebee; border: 2px solid #d32f2f; border-radius: 4px; text-align: center;">
+          <div style="color: #d32f2f; font-weight: bold; margin-bottom: 8px;">❌ Process Failed</div>
+          <div style="color: #333; font-size: 14px;">${errorMessage}</div>
+        </div>
+      `;
+    }
   } finally {
-    button.disabled = false;
+    if (button) button.disabled = false;
   }
 }
 

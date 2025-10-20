@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Check, Loader2 } from 'lucide-react';
 import { CaseSelector } from './components/CaseSelector';
 import { DocumentSelector } from './components/DocumentSelector';
+import { detectDocumentType, getDocumentTypeName } from './document-detector';
+import { DocumentType } from './types';
+import { MOCK_CHECKLIST_OPERATIONS } from './mockChecklistData';
+import { MOCK_PERIODIC_CASE_REVIEW_OPERATIONS } from './mockPeriodicCaseReviewData';
+import { executeChecklistOperations } from './checklist-executor';
+import { executePeriodicCaseReviewOperations } from './periodic-case-review-executor';
 
 type Task = {
   id: number;
@@ -70,9 +76,9 @@ export function DraftingTabApp({ onStartRewrite }: DraftingTabAppProps) {
     };
   }, []);
 
-  const handleStartRewrite = () => {
+  const handleStartRewrite = async () => {
+    // Set loading state and reset tasks immediately on click
     setStage('loading');
-    // Reset tasks
     setTasks([
       { id: 1, label: 'Understanding document', status: 'pending' },
       { id: 2, label: 'Identifying missing info', status: 'pending' },
@@ -80,8 +86,52 @@ export function DraftingTabApp({ onStartRewrite }: DraftingTabAppProps) {
       { id: 4, label: 'Typing....', status: 'pending' },
     ]);
 
-    // Call the actual rewrite handler
-    onStartRewrite();
+    // Start task 1 loading immediately (no lag)
+    updateTaskStateGlobal?.(1, 'loading');
+
+    try {
+      // Detect document type (happens while task 1 shows loading)
+      const docType = await detectDocumentType();
+      console.log('[DraftingTab] Detected document type:', docType);
+
+      // Route to appropriate executor based on document type
+      if (docType === DocumentType.CHECKLIST_3 || docType === DocumentType.PERIODIC_CASE_REVIEW) {
+        // Handle checklist/review flow with task updates
+        // Task 1 already loading, complete it after document detection
+        updateTaskStateGlobal?.(1, 'complete');
+
+        // Steps 2-3: Quick completion
+        updateTaskStateGlobal?.(2, 'loading');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        updateTaskStateGlobal?.(2, 'complete');
+
+        updateTaskStateGlobal?.(3, 'loading');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        updateTaskStateGlobal?.(3, 'complete');
+
+        // Step 4: Execute appropriate flow
+        updateTaskStateGlobal?.(4, 'loading');
+
+        if (docType === DocumentType.CHECKLIST_3) {
+          await executeChecklistOperations(MOCK_CHECKLIST_OPERATIONS);
+        } else {
+          await executePeriodicCaseReviewOperations(MOCK_PERIODIC_CASE_REVIEW_OPERATIONS);
+        }
+
+        // Mark task 4 as complete (this will trigger timestamp)
+        updateTaskStateGlobal?.(4, 'complete');
+
+        // Stay in loading stage to show completion timestamp
+      } else {
+        // Default: Execute normal draft flow (sip6_report.docx)
+        // Let onStartRewrite handle everything including task updates
+        onStartRewrite();
+      }
+    } catch (error) {
+      console.error('[DraftingTab] Error:', error);
+      // Fallback to normal draft flow
+      onStartRewrite();
+    }
   };
 
   return (
@@ -199,13 +249,12 @@ export function DraftingTabApp({ onStartRewrite }: DraftingTabAppProps) {
 
       {/* AI Rewrite Button */}
       {stage === 'initial' && (
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           <button
             id="ai-rewrite-btn"
             onClick={handleStartRewrite}
             style={{
-              width: '100%',
-              padding: '14px 20px',
+              padding: '14px 32px',
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
               border: 'none',
@@ -215,7 +264,8 @@ export function DraftingTabApp({ onStartRewrite }: DraftingTabAppProps) {
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               opacity: 1,
-              transform: 'scale(1)'
+              transform: 'scale(1)',
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.02)';

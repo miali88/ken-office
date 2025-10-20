@@ -10,7 +10,6 @@ import '../outlook/styles/globals.css';
 
 import { initializeDraftingTab, getDraftingTabHTML } from './drafting-tab';
 import { initializeAIChatTab, getAIChatTabHTML } from './ai-chat-tab';
-import { initializeChecklistTab, getChecklistTabHTML } from './checklist-tab';
 
 /**
  * Initialize Word add-in
@@ -34,7 +33,6 @@ export function initialize() {
   // Initialize each tab module
   initializeDraftingTab();
   initializeAIChatTab();
-  initializeChecklistTab();
 
   console.log('[Word] All tabs initialized');
 }
@@ -84,13 +82,11 @@ function getWordHTML(): string {
       <!-- Tab Navigation -->
       <div style="display: flex; background: #1e1e1e; border-bottom: 1px solid #666;">
         <button class="tab-button active" data-tab="drafting" style="flex: 1; padding: 12px; background: #2d2d2d; color: white; border: none; cursor: pointer; font-weight: 600;">Drafting</button>
-        <button class="tab-button" data-tab="checklist" style="flex: 1; padding: 12px; background: #1e1e1e; color: #999; border: none; cursor: pointer; font-weight: 600;">Checklist</button>
         <button class="tab-button" data-tab="ai-chat" style="flex: 1; padding: 12px; background: #1e1e1e; color: #999; border: none; cursor: pointer; font-weight: 600;">AI Chat</button>
       </div>
 
       <!-- Tab Content Areas -->
       ${getDraftingTabHTML()}
-      ${getChecklistTabHTML()}
       ${getAIChatTabHTML()}
     </div>
   `;

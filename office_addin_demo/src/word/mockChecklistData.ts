@@ -123,5 +123,21 @@ export const MOCK_CHECKLIST_OPERATIONS: FillChecklistCellOperation[] = [
         "creditor_analysis_report.pdf"
       ]
     }
+  },
+  {
+    type: "fillChecklistCell",
+    tableIndex: 1,
+    row: 6, // Task 6: General Meeting notice requirements
+    cell: 3,
+    value: "MA\n16/09/2008",
+    checklistMetadata: {
+      status: "✅ Completed",
+      commentary: "General Meeting notice issued on 01/09/2008 satisfying 14 days' notice requirement under s307 CA06. Notice included details of resolutions for liquidation and liquidator appointment per s302 CA06.",
+      references: [
+        "general_meeting_notice_01_09_2008.pdf",
+        "company_articles_of_association.pdf",
+        "members_register_extract.pdf"
+      ]
+    }
   }
 ];
