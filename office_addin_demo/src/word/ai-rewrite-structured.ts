@@ -283,9 +283,12 @@ async function executeTableOperations(
 
       // Build a comprehensive comment for all table changes
       const commentText = buildTableCommentText(tableIndex, modifiedCells, operations[0].metadata);
-      range.insertComment(commentText);
 
-      console.log(`Added single comment to table ${tableIndex} summarizing ${modifiedCells.length} cell changes`);
+      // Only add comment if there are sources
+      if (commentText) {
+        range.insertComment(commentText);
+        console.log(`Added single comment to table ${tableIndex} summarizing ${modifiedCells.length} cell changes`);
+      }
     } catch (e) {
       console.warn('Could not add comment to table:', e);
     }
@@ -332,14 +335,16 @@ async function executeFillTableCell(
   cell.body.clear();
   const insertedRange = cell.body.insertText(operation.value, Word.InsertLocation.start);
 
-  // Add comment with metadata
-  try {
-    const commentText = buildCommentText('fillTableCell', operation.value, operation.metadata);
-    // Insert comment on the text range, not the cell body
-    insertedRange.insertComment(commentText);
-    console.log('Comment added successfully to table cell:', operation.row, operation.cell);
-  } catch (e) {
-    console.warn('Could not add comment to table cell:', e);
+  // Add comment with metadata only if there are sources
+  const commentText = buildCommentText('fillTableCell', operation.value, operation.metadata);
+  if (commentText) {
+    try {
+      // Insert comment on the text range, not the cell body
+      insertedRange.insertComment(commentText);
+      console.log('Comment added successfully to table cell:', operation.row, operation.cell);
+    } catch (e) {
+      console.warn('Could not add comment to table cell:', e);
+    }
   }
 }
 
@@ -393,11 +398,13 @@ async function executeReplacePlaceholder(
           paragraph.clear();
           const insertedRange = paragraph.insertText(newText, Word.InsertLocation.start);
 
-          // Add comment
-          try {
-            insertedRange.insertComment(commentText);
-          } catch (e) {
-            console.warn('Could not add comment:', e);
+          // Add comment only if there are sources
+          if (commentText) {
+            try {
+              insertedRange.insertComment(commentText);
+            } catch (e) {
+              console.warn('Could not add comment:', e);
+            }
           }
 
           replacedCount++;
@@ -406,11 +413,13 @@ async function executeReplacePlaceholder(
       } catch (expandError) {
         const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
 
-        // Add comment
-        try {
-          insertedRange.insertComment(commentText);
-        } catch (e) {
-          console.warn('Could not add comment:', e);
+        // Add comment only if there are sources
+        if (commentText) {
+          try {
+            insertedRange.insertComment(commentText);
+          } catch (e) {
+            console.warn('Could not add comment:', e);
+          }
         }
 
         replacedCount++;
@@ -422,11 +431,13 @@ async function executeReplacePlaceholder(
       for (const result of searchResults.items) {
         const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
 
-        // Add comment
-        try {
-          insertedRange.insertComment(commentText);
-        } catch (e) {
-          console.warn('Could not add comment:', e);
+        // Add comment only if there are sources
+        if (commentText) {
+          try {
+            insertedRange.insertComment(commentText);
+          } catch (e) {
+            console.warn('Could not add comment:', e);
+          }
         }
 
         replacedCount++;
@@ -434,11 +445,13 @@ async function executeReplacePlaceholder(
     } else {
       const insertedRange = searchResults.items[0].insertText(operation.value, Word.InsertLocation.replace);
 
-      // Add comment
-      try {
-        insertedRange.insertComment(commentText);
-      } catch (e) {
-        console.warn('Could not add comment:', e);
+      // Add comment only if there are sources
+      if (commentText) {
+        try {
+          insertedRange.insertComment(commentText);
+        } catch (e) {
+          console.warn('Could not add comment:', e);
+        }
       }
 
       replacedCount = 1;
@@ -472,11 +485,13 @@ async function executeReplaceText(
   for (const result of searchResults.items) {
     const insertedRange = result.insertText(operation.value, Word.InsertLocation.replace);
 
-    // Add comment
-    try {
-      insertedRange.insertComment(commentText);
-    } catch (e) {
-      console.warn('Could not add comment:', e);
+    // Add comment only if there are sources
+    if (commentText) {
+      try {
+        insertedRange.insertComment(commentText);
+      } catch (e) {
+        console.warn('Could not add comment:', e);
+      }
     }
   }
 }
@@ -507,71 +522,53 @@ async function executeDeleteText(
 
 /**
  * Build comment text with metadata
+ * Returns null if there are no sources to display
  */
 function buildCommentText(
   operationType: string,
   insertedValue: string,
-  metadata?: { confidence?: string; source?: string; reasoning?: string },
+  metadata?: { confidence?: string; source?: string; reasoning?: string; sources?: string[] },
   originalTarget?: string
-): string {
+): string | null {
+  // Only create a comment if there are sources
+  if (!metadata?.sources || metadata.sources.length === 0) {
+    return null;
+  }
+
   const lines: string[] = [];
 
   // Header
-  lines.push(`🤖 Kenneth AI - ${operationType}`);
   lines.push('');
 
-  // Show what was replaced if available
-  if (originalTarget) {
-    const displayTarget = originalTarget.length > 100
-      ? originalTarget.substring(0, 100) + '...'
-      : originalTarget;
-    lines.push(`Replaced: "${displayTarget}"`);
-    lines.push('');
-  }
-
-  // Show inserted value
-  const displayValue = insertedValue.length > 150
-    ? insertedValue.substring(0, 150) + '...'
-    : insertedValue;
-  lines.push(`New value: "${displayValue}"`);
+  // Sources section
+  lines.push('Sources:');
+  metadata.sources.forEach((source, index) => {
+    // Add numerical reference with hyperlink
+    const linkUrl = `https://example.com/documents/${encodeURIComponent(source)}`;
+    lines.push(`  ${index + 1}. ${source} - ${linkUrl}`);
+  });
   lines.push('');
-
-  // Metadata section
-  if (metadata) {
-    lines.push('--- Metadata ---');
-
-    if (metadata.confidence) {
-      const confidenceEmoji = metadata.confidence === 'high' ? '✅' : metadata.confidence === 'medium' ? '⚠️' : '❓';
-      lines.push(`${confidenceEmoji} Confidence: ${metadata.confidence}`);
-    }
-
-    if (metadata.source) {
-      lines.push(`📁 Source: ${metadata.source}`);
-    }
-
-    if (metadata.reasoning) {
-      lines.push(`💭 Reasoning: ${metadata.reasoning}`);
-    }
-
-    lines.push('');
-  }
 
   // Footer
   lines.push('---');
-  lines.push('Author: Kenneth AI (Demo Mode)');
-  lines.push('💡 Using mock data from mockLLMResponse.ts');
 
   return lines.join('\n');
 }
 
 /**
  * Build consolidated comment text for table operations
+ * Returns null if there are no sources to display
  */
 function buildTableCommentText(
   tableIndex: number,
   modifiedCells: Array<{ row: number; cell: number; value: string }>,
-  metadata?: { confidence?: string; source?: string; reasoning?: string }
-): string {
+  metadata?: { confidence?: string; source?: string; reasoning?: string; sources?: string[] }
+): string | null {
+  // Only create a comment if there are sources
+  if (!metadata?.sources || metadata.sources.length === 0) {
+    return null;
+  }
+
   const lines: string[] = [];
 
   // Header
@@ -580,41 +577,14 @@ function buildTableCommentText(
   lines.push(`Updated ${modifiedCells.length} cells in table ${tableIndex}`);
   lines.push('');
 
-  // Show a sample of the changes (first few cells)
-  const sampleSize = Math.min(3, modifiedCells.length);
-  for (let i = 0; i < sampleSize; i++) {
-    const cell = modifiedCells[i];
-    const displayValue = cell.value.length > 50
-      ? cell.value.substring(0, 50) + '...'
-      : cell.value;
-    lines.push(`  Row ${cell.row}, Cell ${cell.cell}: "${displayValue}"`);
-  }
-
-  if (modifiedCells.length > sampleSize) {
-    lines.push(`  ... and ${modifiedCells.length - sampleSize} more cells`);
-  }
-
+  // Sources section
+  lines.push('Sources:');
+  metadata.sources.forEach((source, index) => {
+    // Add numerical reference with hyperlink
+    const linkUrl = `https://example.com/documents/${encodeURIComponent(source)}`;
+    lines.push(`  ${index + 1}. ${source} - ${linkUrl}`);
+  });
   lines.push('');
-
-  // Metadata section
-  if (metadata) {
-    lines.push('--- Metadata ---');
-
-    if (metadata.confidence) {
-      const confidenceEmoji = metadata.confidence === 'high' ? '✅' : metadata.confidence === 'medium' ? '⚠️' : '❓';
-      lines.push(`${confidenceEmoji} Confidence: ${metadata.confidence}`);
-    }
-
-    if (metadata.source) {
-      lines.push(`📁 Source: ${metadata.source}`);
-    }
-
-    if (metadata.reasoning) {
-      lines.push(`💭 Reasoning: ${metadata.reasoning}`);
-    }
-
-    lines.push('');
-  }
 
   // Footer
   lines.push('---');

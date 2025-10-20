@@ -62,6 +62,7 @@ export interface OperationMetadata {
   confidence: 'high' | 'medium' | 'low';
   source?: string;
   reasoning?: string;
+  sources?: string[];
 }
 
 export interface ChecklistMetadata {

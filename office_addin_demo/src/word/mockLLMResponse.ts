@@ -16,19 +16,17 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     replaceAll: true,
     metadata: {
       confidence: "medium",
-      source: "searchCaseDocuments",
-      reasoning: "Financial year end dates extracted from company accounts filings"
+      sources: [
+        "financial_records_2007.pdf",
+        "annual_report_30_sept_2007.pdf"
+      ]
     }
   },
   {
     type: "replacePlaceholder",
     target: "company_name",
     value: "LEHMAN BROTHERS LIMITED",
-    replaceAll: true,
-    metadata: {
-      confidence: "high",
-      source: "case details"
-    }
+    replaceAll: true
   },
   {
     type: "replaceText",
@@ -42,22 +40,19 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
   {
     type: "replaceText",
     target: "(introducer)",
-    value: "[TO BE COMPLETED - Introducer Name]",
+    value: "Michael Thompson, Barclays Capital",
     metadata: {
-      confidence: "low",
-      source: "manual input"
+      confidence: "medium",
+      sources: [
+        "initial_advice.pdf"
+      ]
     }
   },
   {
     type: "replaceText",
     target: "{{ CONDITION_1:",
     value: "",
-    matchCase: false,
-    metadata: {
-      confidence: "medium",
-      source: "default assumption",
-      reasoning: "Remove conditional marker"
-    }
+    matchCase: false
   },
   {
     type: "replaceText",
@@ -66,31 +61,22 @@ export const MOCK_LLM_OPERATIONS: DocumentOperation[] = [
     matchCase: false,
     metadata: {
       confidence: "medium",
-      source: "default assumption",
-      reasoning: "Replace conditional options with chosen option"
+      sources: [
+        "conflict_ethical_checklist.docx"
+      ]
     }
   },
   {
     type: "replaceText",
     target: "whether prior relationship has existed.",
     value: "",
-    matchCase: false,
-    metadata: {
-      confidence: "medium",
-      source: "default assumption",
-      reasoning: "Remove conditional description"
-    }
+    matchCase: false
   },
   {
     type: "replaceText",
     target: "}}",
     value: "",
-    matchCase: false,
-    metadata: {
-      confidence: "high",
-      source: "template cleanup",
-      reasoning: "Remove closing conditional brackets"
-    }
+    matchCase: false
   },
   {
     type: "replacePlaceholder",
